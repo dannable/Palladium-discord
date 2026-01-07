@@ -1,7 +1,33 @@
 #!/usr/bin/env python3
+"""
+Palladium/Road Hogs style character generator Discord bot.
+
+Slash commands:
+  /palladium      name:<optional> stat_mode:<optional>
+  /palladium_art  name:<optional> stat_mode:<optional>
+
+Stat roll modes:
+  - 3d6 (default)
+  - 4d6 drop lowest (4d6dl)
+
+Features:
+- Rolls 8 attributes (IQ, ME, MA, PS, PP, PE, PB, SPD)
+  * Base: 3d6 OR 4d6 drop lowest (selectable)
+  * If base total is 16–18: roll +1d6; if that bonus die is 6, roll +1d6 more (max 2 bonus dice)
+- Computes Palladium attribute bonuses from the provided chart (16–30), with bonus lookups capped at 30.
+- Generates Animal Type:
+  * Roll d100 for category, then d100 for animal within that category.
+- Generates Mutant Background:
+  * Roll d100 and map to background category (with a short summary).
+- Generates Finances per background:
+  * Personal money (dice formula or fixed) + vehicle expenses (fixed/none), based on your screenshot.
+- Generates Midjourney prompt (prompt text only).
+"""
+
 import os
 import random
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Tuple, Dict, Optional, Union
 
 import discord
@@ -16,7 +42,15 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 
 if not DISCORD_TOKEN or len(DISCORD_TOKEN) < 30:
-    raise RuntimeError("DISCORD_TOKEN looks missing/invalid. Put your Bot Token in .env as DISCORD_TOKEN=... (no quotes).")
+    raise RuntimeError(
+        "DISCORD_TOKEN looks missing/invalid. Put your Bot Token in .env as DISCORD_TOKEN=... (no quotes)."
+    )
+
+# -------------------- Stat roll mode --------------------
+
+class StatRollMode(str, Enum):
+    THREE_D6 = "3d6"
+    FOUR_D6_DROP_LOWEST = "4d6dl"
 
 # -------------------- Dice helpers --------------------
 
@@ -29,9 +63,6 @@ def roll_d100() -> int:
 def roll_nds(n: int, s: int) -> int:
     return sum(random.randint(1, s) for _ in range(n))
 
-def money(n: int, s: int, mult: int = 1, add: int = 0) -> int:
-    return roll_nds(n, s) * mult + add
-
 def fmt_cash(amount: Optional[int]) -> str:
     if amount is None:
         return "None"
@@ -39,13 +70,17 @@ def fmt_cash(amount: Optional[int]) -> str:
 
 # -------------------- Attribute rolling --------------------
 
-def roll_attribute() -> int:
-    # Base roll: 4d6 drop lowest
-    rolls = sorted(roll_d6() for _ in range(4))
-    total = sum(rolls[1:])
+def roll_attribute(mode: StatRollMode = StatRollMode.THREE_D6) -> int:
+    if mode == StatRollMode.FOUR_D6_DROP_LOWEST:
+        rolls = sorted(roll_d6() for _ in range(4))
+        base = sum(rolls[1:])  # drop the lowest
+    else:
+        base = sum(roll_d6() for _ in range(3))
 
-    # If 16–18 on the base, add bonus dice: +1d6; if that die is 6, +1d6 more (max 2)
-    if 16 <= total <= 18:
+    total = base
+
+    # Bonus dice rule: only if the BASE (before bonus) is 16–18
+    if 16 <= base <= 18:
         bonus1 = roll_d6()
         total += bonus1
         if bonus1 == 6:
@@ -54,9 +89,11 @@ def roll_attribute() -> int:
     return total
 
 def clamp_for_chart(score: int) -> int:
+    # Bonus chart defined for 16..30; cap for bonus lookups.
     return min(score, 30)
 
 # -------------------- Palladium bonus tables (16..30) --------------------
+# Encoded from your chart.
 
 MA_TRUST_INTIMIDATE = {
     16: 40, 17: 45, 18: 50, 19: 55, 20: 60,
@@ -77,27 +114,31 @@ PB_CHARM_IMPRESS = {
 }
 
 def iq_bonus_percent(iq: int) -> int:
+    # 16->+2% ... 30->+16%
     if iq < 16:
         return 0
-    return clamp_for_chart(iq) - 14  # 16->2 ... 30->16
+    return clamp_for_chart(iq) - 14
 
 def step_every_two(score: int) -> int:
+    # 16-17:+1, 18-19:+2, ..., 30:+8
     if score < 16:
         return 0
-    return (clamp_for_chart(score) - 14) // 2  # 16->1 ... 30->8
+    return (clamp_for_chart(score) - 14) // 2
 
 def me_insanity_bonus(me: int) -> int:
+    # 16-17:+1, 18-19:+2, 20:+3, then 21:+4 ... 30:+13
     if me < 16:
         return 0
     s = clamp_for_chart(me)
     if s <= 20:
         return (s - 14) // 2
-    return s - 17  # 21->4 ... 30->13
+    return s - 17
 
 def ps_damage_bonus(ps: int) -> int:
+    # 16:+1 ... 30:+15
     if ps < 16:
         return 0
-    return clamp_for_chart(ps) - 15  # 16->1 ... 30->15
+    return clamp_for_chart(ps) - 15
 
 def ma_trust_intimidate_percent(ma: int) -> int:
     if ma < 16:
@@ -161,7 +202,7 @@ def format_attr_line(attr: str, score: int) -> str:
             parts.append(f"Charm/Impress {pct}%")
 
     elif attr == "SPD":
-        pass
+        pass  # No special bonuses in your chart
 
     if parts:
         return f"{attr}: {score} ({', '.join(parts)}){capped_note}"
@@ -249,7 +290,12 @@ def generate_animal_type() -> dict:
     category = pick_from_table(cat_roll, ANIMAL_CATEGORY)
     animal_roll = roll_d100()
     animal = pick_from_table(animal_roll, ANIMALS_BY_CATEGORY[category])
-    return {"category_roll": cat_roll, "category": category, "animal_roll": animal_roll, "animal": animal}
+    return {
+        "category_roll": cat_roll,
+        "category": category,
+        "animal_roll": animal_roll,
+        "animal": animal,
+    }
 
 # -------------------- Mutant Background --------------------
 
@@ -278,7 +324,11 @@ MUTANT_BACKGROUND_SUMMARY: Dict[str, str] = {
 def generate_mutant_background() -> dict:
     roll = roll_d100()
     background = pick_from_table(roll, MUTANT_BACKGROUND)
-    return {"roll": roll, "background": background, "summary": MUTANT_BACKGROUND_SUMMARY.get(background, "")}
+    return {
+        "roll": roll,
+        "background": background,
+        "summary": MUTANT_BACKGROUND_SUMMARY.get(background, ""),
+    }
 
 # -------------------- Finances (vehicle expenses + personal money) --------------------
 
@@ -289,13 +339,12 @@ class DiceMoney:
     mult: int = 1
     add: int = 0
 
-PersonalMoneyRule = Union[DiceMoney, int, None]  # None means "none/handled as gear-only text"
+PersonalMoneyRule = Union[DiceMoney, int, None]
 
 BACKGROUND_FINANCES: Dict[str, Dict[str, object]] = {
-    # From your Mutant Background chart text (as readable on the scan):
     "Mechanic": {
-        "personal_rule": DiceMoney(3, 6, 100),   # $300–$1800
-        "vehicle_expenses": 12000,              # "$12,000 car"
+        "personal_rule": DiceMoney(3, 6, 100),  # $300–$1800
+        "vehicle_expenses": 12000,
         "personal_note": None,
     },
     "Biker": {
@@ -310,11 +359,11 @@ BACKGROUND_FINANCES: Dict[str, Dict[str, object]] = {
     },
     "Feral Mutant Animal": {
         "personal_rule": DiceMoney(1, 6, 10),   # $10–$60
-        "vehicle_expenses": None,               # NO vehicle expenses
+        "vehicle_expenses": None,
         "personal_note": None,
     },
     "Ninja": {
-        "personal_rule": 250,                   # treat outfit money as personal gear budget
+        "personal_rule": 250,                   # outfitting budget seen on your scan
         "vehicle_expenses": None,
         "personal_note": "Outfitting budget (weapons/equipment/supplies).",
     },
@@ -370,9 +419,11 @@ def generate_finances(background_name: str) -> dict:
 
 # -------------------- Character generation / formatting --------------------
 
-def generate_character() -> tuple[Dict[str, int], dict, dict, dict]:
+def generate_character(
+    stat_mode: StatRollMode = StatRollMode.THREE_D6
+) -> tuple[Dict[str, int], dict, dict, dict]:
     attrs = ["IQ", "ME", "MA", "PS", "PP", "PE", "PB", "SPD"]
-    scores = {a: roll_attribute() for a in attrs}
+    scores = {a: roll_attribute(stat_mode) for a in attrs}
     animal = generate_animal_type()
     background = generate_mutant_background()
     finances = generate_finances(background["background"])
@@ -383,14 +434,15 @@ def build_sheet_text(
     animal: dict,
     background: dict,
     finances: dict,
-    name: Optional[str] = None
+    name: Optional[str] = None,
+    stat_mode: StatRollMode = StatRollMode.THREE_D6,
 ) -> str:
     lines: List[str] = []
 
     if name:
         lines.append(f"**{name}**")
 
-    lines.append("**Attributes**")
+    lines.append(f"**Attributes** *(rolled: {stat_mode.value})*")
     for attr in ["IQ", "ME", "MA", "PS", "PP", "PE", "PB", "SPD"]:
         lines.append(format_attr_line(attr, scores[attr]))
 
@@ -424,35 +476,26 @@ def build_sheet_text(
 
     return "\n".join(lines)
 
-def build_midjourney_prompt(
-    animal: dict,
-    background: dict,
-    name: Optional[str] = None,
-) -> str:
-    """
-    Returns a Midjourney-ready prompt string using Animal Type + Mutant Background.
-    You can tweak style flags at the bottom to taste.
-    """
+# -------------------- Midjourney prompt generation --------------------
+
+def build_midjourney_prompt(animal: dict, background: dict, name: Optional[str] = None) -> str:
     animal_type = animal["animal"]
     category = animal["category"]
     bg = background["background"]
 
-    # Core concept line
     subject = f"anthropomorphic {animal_type.lower()} mutant"
 
-    # Background flavor -> quick visual cues
     bg_flavor = {
         "Mechanic": "grease-stained coveralls, tool belt, welding goggles, patched leather jacket, improvised armor plates",
-        "Biker": "spiked leathers, biker gang patches, road-worn helmet, chain accessories, sawed-off highway gear aesthetic",
+        "Biker": "spiked leathers, biker gang patches, road-worn helmet, chain accessories, highway raider aesthetic",
         "Trooper": "wasteland highway patrol uniform, battered riot gear, tactical harness, badge, cracked visor helmet",
         "Feral Mutant Animal": "ragged scavenger wraps, survivalist straps, bone-and-scrap trophies, wild eyes, feral posture",
-        "Ninja": "tattered ninja gi, wrapped hands, stealth harness, smoke bombs, subtle clan markings, masked face",
-        "Trucker": "heavy-duty gloves, reinforced vest, cargo straps, trucker cap or helmet, convoy escort gear",
+        "Ninja": "tattered ninja gi, wrapped hands, stealth harness, subtle clan markings, masked face",
+        "Trucker": "heavy-duty gloves, reinforced vest, cargo straps, convoy escort gear, weathered trucker cap or helmet",
         "Highway Engineer": "utility harness, reflective strips, heavy boots, surveyor kit, roadwork tools, patched hardhat",
         "Natural Mechanical Genius": "improvised tech accessories, scavenged circuit charms, magnetized tool pouches, uncanny tinkerer vibe",
     }.get(bg, "post-apocalyptic scavenger gear, practical road-worn outfit")
 
-    # Optional extras based on category for environment hints
     env_hint = {
         "Urban": "ruined city streets, graffiti, broken neon signs",
         "Rural": "dusty backroads, abandoned barns, telephone poles",
@@ -463,10 +506,8 @@ def build_midjourney_prompt(
         "Zoo": "escaped menagerie vibe, shattered zoo gates, warning signs",
     }.get(category, "wasteland highway")
 
-    # Title/name tag
     name_tag = f"{name}, " if name else ""
 
-    # Assemble prompt
     prompt = (
         f"{name_tag}{subject}, {bg.lower()} background, {bg_flavor}, "
         f"post-apocalyptic highway wasteland, {env_hint}, "
@@ -476,9 +517,7 @@ def build_midjourney_prompt(
         f"clean background separation, character sheet presentation"
     )
 
-    # Midjourney flags (tweak freely)
     flags = "--ar 2:3 --stylize 250 --v 6"
-
     return f"{prompt} {flags}"
 
 # -------------------- Discord bot --------------------
@@ -490,6 +529,7 @@ class PalladiumBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self) -> None:
+        # Guild sync is fastest for dev; global sync can take a while to appear.
         if GUILD_ID:
             try:
                 guild = discord.Object(id=int(GUILD_ID))
@@ -507,37 +547,57 @@ class PalladiumBot(discord.Client):
 
 bot = PalladiumBot()
 
+_STAT_MODE_CHOICES = [
+    app_commands.Choice(name="3d6 (classic)", value=StatRollMode.THREE_D6.value),
+    app_commands.Choice(name="4d6 drop lowest", value=StatRollMode.FOUR_D6_DROP_LOWEST.value),
+]
+
+def parse_stat_mode(stat_mode: Optional[str]) -> StatRollMode:
+    if stat_mode == StatRollMode.FOUR_D6_DROP_LOWEST.value:
+        return StatRollMode.FOUR_D6_DROP_LOWEST
+    return StatRollMode.THREE_D6
+
 @bot.tree.command(
     name="palladium",
     description="Generate attributes + bonuses + animal type + mutant background + finances."
 )
-@app_commands.describe(name="Optional character name to include at the top")
-async def palladium(interaction: discord.Interaction, name: Optional[str] = None):
-    scores, animal, background, finances = generate_character()
-    sheet = build_sheet_text(scores, animal, background, finances, name=name)
+@app_commands.describe(
+    name="Optional character name to include at the top",
+    stat_mode="How to roll attributes (default: 3d6)"
+)
+@app_commands.choices(stat_mode=_STAT_MODE_CHOICES)
+async def palladium(
+    interaction: discord.Interaction,
+    name: Optional[str] = None,
+    stat_mode: Optional[str] = None,
+):
+    mode = parse_stat_mode(stat_mode)
+    scores, animal, background, finances = generate_character(mode)
+    sheet = build_sheet_text(scores, animal, background, finances, name=name, stat_mode=mode)
     await interaction.response.send_message(sheet)
+
 @bot.tree.command(
     name="palladium_art",
-    description="Generate the character + a Midjourney prompt based on animal type and background."
+    description="Generate character + a Midjourney prompt based on animal type and background."
 )
 @app_commands.describe(
-    name="Optional character name to include at the top (and in the art prompt)."
+    name="Optional character name to include at the top (and in the art prompt)",
+    stat_mode="How to roll attributes (default: 3d6)"
 )
-async def palladium_art(interaction: discord.Interaction, name: Optional[str] = None):
-    scores, animal, background, finances = generate_character()
-    sheet = build_sheet_text(scores, animal, background, finances, name=name)
-
+@app_commands.choices(stat_mode=_STAT_MODE_CHOICES)
+async def palladium_art(
+    interaction: discord.Interaction,
+    name: Optional[str] = None,
+    stat_mode: Optional[str] = None,
+):
+    mode = parse_stat_mode(stat_mode)
+    scores, animal, background, finances = generate_character(mode)
+    sheet = build_sheet_text(scores, animal, background, finances, name=name, stat_mode=mode)
     prompt = build_midjourney_prompt(animal, background, name=name)
 
-    # Put the prompt in a code block for easy copying in Discord
-    message = (
-        f"{sheet}\n\n"
-        f"**Midjourney Prompt**\n"
-        f"```{prompt}```"
-    )
-
+    message = f"{sheet}\n\n**Midjourney Prompt**\n```{prompt}```"
     await interaction.response.send_message(message)
-    
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (id={bot.user.id})")
