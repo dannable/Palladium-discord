@@ -558,7 +558,7 @@ def parse_stat_mode(stat_mode: Optional[str]) -> StatRollMode:
     return StatRollMode.THREE_D6
 
 @bot.tree.command(
-    name="palladium",
+    name="roadhog",
     description="Generate attributes + bonuses + animal type + mutant background + finances."
 )
 @app_commands.describe(
@@ -566,7 +566,7 @@ def parse_stat_mode(stat_mode: Optional[str]) -> StatRollMode:
     stat_mode="How to roll attributes (default: 3d6)"
 )
 @app_commands.choices(stat_mode=_STAT_MODE_CHOICES)
-async def palladium(
+async def roadhog(
     interaction: discord.Interaction,
     name: Optional[str] = None,
     stat_mode: Optional[str] = None,
@@ -577,7 +577,7 @@ async def palladium(
     await interaction.response.send_message(sheet)
 
 @bot.tree.command(
-    name="palladium_art",
+    name="roadhog_art",
     description="Generate character + a Midjourney prompt based on animal type and background."
 )
 @app_commands.describe(
@@ -585,7 +585,7 @@ async def palladium(
     stat_mode="How to roll attributes (default: 3d6)"
 )
 @app_commands.choices(stat_mode=_STAT_MODE_CHOICES)
-async def palladium_art(
+async def roadhog_art(
     interaction: discord.Interaction,
     name: Optional[str] = None,
     stat_mode: Optional[str] = None,
