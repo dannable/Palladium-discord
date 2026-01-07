@@ -314,8 +314,6 @@ BACKGROUND_FINANCES: Dict[str, Dict[str, object]] = {
         "personal_note": None,
     },
     "Ninja": {
-        # Scan clearly shows: "Outfitting includes $250 of weapons, equipment and supplies."
-        # and continues: "teacher provides ... NO vehicle expenses are given."
         "personal_rule": 250,                   # treat outfit money as personal gear budget
         "vehicle_expenses": None,
         "personal_note": "Outfitting budget (weapons/equipment/supplies).",
@@ -426,6 +424,63 @@ def build_sheet_text(
 
     return "\n".join(lines)
 
+def build_midjourney_prompt(
+    animal: dict,
+    background: dict,
+    name: Optional[str] = None,
+) -> str:
+    """
+    Returns a Midjourney-ready prompt string using Animal Type + Mutant Background.
+    You can tweak style flags at the bottom to taste.
+    """
+    animal_type = animal["animal"]
+    category = animal["category"]
+    bg = background["background"]
+
+    # Core concept line
+    subject = f"anthropomorphic {animal_type.lower()} mutant"
+
+    # Background flavor -> quick visual cues
+    bg_flavor = {
+        "Mechanic": "grease-stained coveralls, tool belt, welding goggles, patched leather jacket, improvised armor plates",
+        "Biker": "spiked leathers, biker gang patches, road-worn helmet, chain accessories, sawed-off highway gear aesthetic",
+        "Trooper": "wasteland highway patrol uniform, battered riot gear, tactical harness, badge, cracked visor helmet",
+        "Feral Mutant Animal": "ragged scavenger wraps, survivalist straps, bone-and-scrap trophies, wild eyes, feral posture",
+        "Ninja": "tattered ninja gi, wrapped hands, stealth harness, smoke bombs, subtle clan markings, masked face",
+        "Trucker": "heavy-duty gloves, reinforced vest, cargo straps, trucker cap or helmet, convoy escort gear",
+        "Highway Engineer": "utility harness, reflective strips, heavy boots, surveyor kit, roadwork tools, patched hardhat",
+        "Natural Mechanical Genius": "improvised tech accessories, scavenged circuit charms, magnetized tool pouches, uncanny tinkerer vibe",
+    }.get(bg, "post-apocalyptic scavenger gear, practical road-worn outfit")
+
+    # Optional extras based on category for environment hints
+    env_hint = {
+        "Urban": "ruined city streets, graffiti, broken neon signs",
+        "Rural": "dusty backroads, abandoned barns, telephone poles",
+        "Forest": "overgrown highways, fallen pines, foggy treeline",
+        "Desert/Plains": "sun-bleached asphalt, heat haze, windblown dust",
+        "Aquatic": "flooded roadway, rusted bridge, rain-slicked pavement",
+        "Wild Birds": "open sky, broken overpass, swirling debris",
+        "Zoo": "escaped menagerie vibe, shattered zoo gates, warning signs",
+    }.get(category, "wasteland highway")
+
+    # Title/name tag
+    name_tag = f"{name}, " if name else ""
+
+    # Assemble prompt
+    prompt = (
+        f"{name_tag}{subject}, {bg.lower()} background, {bg_flavor}, "
+        f"post-apocalyptic highway wasteland, {env_hint}, "
+        f"full-body character concept art, dynamic pose, expressive silhouette, "
+        f"high detail, gritty 1980s paperback illustration vibe, muted dusty palette, "
+        f"cinematic lighting, sharp linework, highly textured materials, "
+        f"clean background separation, character sheet presentation"
+    )
+
+    # Midjourney flags (tweak freely)
+    flags = "--ar 2:3 --stylize 250 --v 6"
+
+    return f"{prompt} {flags}"
+
 # -------------------- Discord bot --------------------
 
 class PalladiumBot(discord.Client):
@@ -461,7 +516,28 @@ async def palladium(interaction: discord.Interaction, name: Optional[str] = None
     scores, animal, background, finances = generate_character()
     sheet = build_sheet_text(scores, animal, background, finances, name=name)
     await interaction.response.send_message(sheet)
+@bot.tree.command(
+    name="palladium_art",
+    description="Generate the character + a Midjourney prompt based on animal type and background."
+)
+@app_commands.describe(
+    name="Optional character name to include at the top (and in the art prompt)."
+)
+async def palladium_art(interaction: discord.Interaction, name: Optional[str] = None):
+    scores, animal, background, finances = generate_character()
+    sheet = build_sheet_text(scores, animal, background, finances, name=name)
 
+    prompt = build_midjourney_prompt(animal, background, name=name)
+
+    # Put the prompt in a code block for easy copying in Discord
+    message = (
+        f"{sheet}\n\n"
+        f"**Midjourney Prompt**\n"
+        f"```{prompt}```"
+    )
+
+    await interaction.response.send_message(message)
+    
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (id={bot.user.id})")
