@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Palladium/Road Hogs style character generator Discord bot.
+Road Hogs / Palladium-style character generator Discord bot.
 
 Slash commands:
-  /palladium      name:<optional> stat_mode:<optional>
-  /palladium_art  name:<optional> stat_mode:<optional>
+  /roadhog      name:<optional> stat_mode:<optional>
+  /roadhog_art  name:<optional> stat_mode:<optional>
 
 Stat roll modes:
   - 3d6 (default)
@@ -14,14 +14,12 @@ Features:
 - Rolls 8 attributes (IQ, ME, MA, PS, PP, PE, PB, SPD)
   * Base: 3d6 OR 4d6 drop lowest (selectable)
   * If base total is 16–18: roll +1d6; if that bonus die is 6, roll +1d6 more (max 2 bonus dice)
-- Computes Palladium attribute bonuses from the provided chart (16–30), with bonus lookups capped at 30.
-- Generates Animal Type:
-  * Roll d100 for category, then d100 for animal within that category.
-- Generates Mutant Background:
-  * Roll d100 and map to background category (with a short summary).
-- Generates Finances per background:
-  * Personal money (dice formula or fixed) + vehicle expenses (fixed/none), based on your screenshot.
-- Generates Midjourney prompt (prompt text only).
+- Computes attribute bonuses from your chart (16–30), with bonus lookups capped at 30.
+- Generates Animal Type (category + animal) from your chart.
+- Generates Mutant Background from your chart.
+- Adds Background skill summaries (from your screenshot).
+- Generates Finances per background (from your screenshot).
+- Generates Midjourney prompt text (prompt only).
 """
 
 import os
@@ -89,10 +87,9 @@ def roll_attribute(mode: StatRollMode = StatRollMode.THREE_D6) -> int:
     return total
 
 def clamp_for_chart(score: int) -> int:
-    # Bonus chart defined for 16..30; cap for bonus lookups.
     return min(score, 30)
 
-# -------------------- Palladium bonus tables (16..30) --------------------
+# -------------------- Attribute bonus tables (16..30) --------------------
 # Encoded from your chart.
 
 MA_TRUST_INTIMIDATE = {
@@ -114,31 +111,27 @@ PB_CHARM_IMPRESS = {
 }
 
 def iq_bonus_percent(iq: int) -> int:
-    # 16->+2% ... 30->+16%
     if iq < 16:
         return 0
-    return clamp_for_chart(iq) - 14
+    return clamp_for_chart(iq) - 14  # 16->2 ... 30->16
 
 def step_every_two(score: int) -> int:
-    # 16-17:+1, 18-19:+2, ..., 30:+8
     if score < 16:
         return 0
-    return (clamp_for_chart(score) - 14) // 2
+    return (clamp_for_chart(score) - 14) // 2  # 16->1 ... 30->8
 
 def me_insanity_bonus(me: int) -> int:
-    # 16-17:+1, 18-19:+2, 20:+3, then 21:+4 ... 30:+13
     if me < 16:
         return 0
     s = clamp_for_chart(me)
     if s <= 20:
         return (s - 14) // 2
-    return s - 17
+    return s - 17  # 21->4 ... 30->13
 
 def ps_damage_bonus(ps: int) -> int:
-    # 16:+1 ... 30:+15
     if ps < 16:
         return 0
-    return clamp_for_chart(ps) - 15
+    return clamp_for_chart(ps) - 15  # 16->1 ... 30->15
 
 def ma_trust_intimidate_percent(ma: int) -> int:
     if ma < 16:
@@ -202,7 +195,7 @@ def format_attr_line(attr: str, score: int) -> str:
             parts.append(f"Charm/Impress {pct}%")
 
     elif attr == "SPD":
-        pass  # No special bonuses in your chart
+        pass
 
     if parts:
         return f"{attr}: {score} ({', '.join(parts)}){capped_note}"
@@ -321,6 +314,48 @@ MUTANT_BACKGROUND_SUMMARY: Dict[str, str] = {
     "Natural Mechanical Genius": "Innate machine intuition; fixes may fail when you leave the machine’s vicinity.",
 }
 
+# Skill summaries extracted from your Mutant Background page (Step 3).
+# This is intentionally a summary (counts + key named skills), not full automation of TMNT/Road Hogs skill selection rules.
+BACKGROUND_SKILLS_SUMMARY: Dict[str, str] = {
+    "Mechanic": (
+        "Auto Mechanics focus. Gets Automotive Mechanics as a Secondary Skill at 5th level "
+        "(listed as 65% diagnosis / 50% repair; +10% per additional level). "
+        "No Scholastic Bonus. Picks: 6 High School Skills, 2 College Skills, 8 Secondary Skills."
+    ),
+    "Biker": (
+        "Driving and combat focus. Starts with Piloting: Automobile (Automatic, Manual, Race Car, 1/2-ton Truck) "
+        "and Pilot Motorcycle at 4th level. No Scholastic Bonus. Picks: 4 Military Weapon Skills and 4 Secondary Skills."
+    ),
+    "Trooper": (
+        "California Road Patrol training. Choose one: Pilot Automobile or Truck or Motorcycle at 5th level. "
+        "+10% Scholastic Bonus. Picks: 6 High School Skills, 6 Secondary Skills, 4 Military Skills."
+    ),
+    "Feral Mutant Animal": (
+        "Survivalist kit. No Scholastic Bonus. Gets: Basic Survival, Climbing, Escape Artist, Prowl, Tracking, Hunting. "
+        "Also picks: 2 Secondary Skills and 2 Military Skills."
+    ),
+    "Ninja": (
+        "Ninja school training. Has Hand to Hand: Ninjitsu. "
+        "Picks: 5 High School Skills, 3 Military Skills, 2 College Skills, 6 Secondary Skills, "
+        "plus 3 ancient/ninja weapon proficiencies. Teacher provides a high-quality traditional weapon (or pair) "
+        "to match main weapon skill."
+    ),
+    "Trucker": (
+        "Convoy specialist. Has Pilot Freight Truck (Semi) at 4th level and Automotive Mechanics at 2nd level. "
+        "No Scholastic Bonus. Picks: 3 High School Skills, 6 Secondary Skills, 3 Military Skills."
+    ),
+    "Highway Engineer": (
+        "Infrastructure specialist. +10% Scholastic Bonus. Exclusive skills listed: Highway Design & Engineering "
+        "and Surface Materials Technology. Also listed: Explosives & Demolitions, Mechanical Engineering, Mathematics, "
+        "Pilot Heavy Machinery, Pilot Automobile (both), Pilot Freight Hauler (Semi) Truck. "
+        "Additionally picks: 4 College Skills, 4 Secondary Skills, 2 Military Skills."
+    ),
+    "Natural Mechanical Genius": (
+        "Innate mechanical intuition: can sense what’s wrong and diagnose/fix with 100% reliability (with the noted "
+        "‘works while nearby’ quirk). No Scholastic Bonus. Picks: 2 High School Skills, 4 Secondary Skills, 2 Military Skills."
+    ),
+}
+
 def generate_mutant_background() -> dict:
     roll = roll_d100()
     background = pick_from_table(roll, MUTANT_BACKGROUND)
@@ -328,6 +363,7 @@ def generate_mutant_background() -> dict:
         "roll": roll,
         "background": background,
         "summary": MUTANT_BACKGROUND_SUMMARY.get(background, ""),
+        "skills_summary": BACKGROUND_SKILLS_SUMMARY.get(background, ""),
     }
 
 # -------------------- Finances (vehicle expenses + personal money) --------------------
@@ -363,7 +399,7 @@ BACKGROUND_FINANCES: Dict[str, Dict[str, object]] = {
         "personal_note": None,
     },
     "Ninja": {
-        "personal_rule": 250,                   # outfitting budget seen on your scan
+        "personal_rule": 250,                   # outfitting budget visible on your scan
         "vehicle_expenses": None,
         "personal_note": "Outfitting budget (weapons/equipment/supplies).",
     },
@@ -457,6 +493,12 @@ def build_sheet_text(
     if background.get("summary"):
         lines.append(f"*{background['summary']}*")
 
+    skills_summary = background.get("skills_summary", "")
+    if skills_summary:
+        lines.append("")
+        lines.append("**Background Skills (summary)**")
+        lines.append(skills_summary)
+
     lines.append("")
     lines.append("**Finances**")
     pm = finances.get("personal_money")
@@ -522,14 +564,13 @@ def build_midjourney_prompt(animal: dict, background: dict, name: Optional[str] 
 
 # -------------------- Discord bot --------------------
 
-class PalladiumBot(discord.Client):
+class RoadHogBot(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self) -> None:
-        # Guild sync is fastest for dev; global sync can take a while to appear.
         if GUILD_ID:
             try:
                 guild = discord.Object(id=int(GUILD_ID))
@@ -545,7 +586,7 @@ class PalladiumBot(discord.Client):
         await self.tree.sync()
         print("Synced commands globally (may take a while to appear).")
 
-bot = PalladiumBot()
+bot = RoadHogBot()
 
 _STAT_MODE_CHOICES = [
     app_commands.Choice(name="3d6 (classic)", value=StatRollMode.THREE_D6.value),
@@ -559,7 +600,7 @@ def parse_stat_mode(stat_mode: Optional[str]) -> StatRollMode:
 
 @bot.tree.command(
     name="roadhog",
-    description="Generate attributes + bonuses + animal type + mutant background + finances."
+    description="Generate Road Hogs character: stats, bonuses, animal type, background, skills summary, finances."
 )
 @app_commands.describe(
     name="Optional character name to include at the top",
@@ -578,7 +619,7 @@ async def roadhog(
 
 @bot.tree.command(
     name="roadhog_art",
-    description="Generate character + a Midjourney prompt based on animal type and background."
+    description="Generate Road Hogs character + Midjourney prompt."
 )
 @app_commands.describe(
     name="Optional character name to include at the top (and in the art prompt)",
