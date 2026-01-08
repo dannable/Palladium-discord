@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 ## Configure
 cp .env.example .env
-# edit .env and set DISCORD_TOKEN and (optionally) GUILD_ID
+edit .env and set DISCORD_TOKEN and (optionally) GUILD_ID
 
 ## Run
 source .venv/bin/activate
