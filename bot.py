@@ -55,7 +55,7 @@ ANIMAL_DESC_ALIASES: Dict[str, str] = {
     "Crocodile (or Alligator)": "Alligator and Crocodile",
     "Peccary (treat as a Boar)": "Boar",
     # If your JSON uses more specific domestic labels, map them here:
-    # "Cat": "Cat — Domestic",
+    "Cat": "Cat — Domestic",
     # "Dog": "Dog — Domestic",
 }
 
@@ -326,6 +326,33 @@ ANIMALS_BY_CATEGORY: Dict[str, RangeTable] = {
     ],
 }
 
+
+# Dog breeds table (from TMNT Corebook dog breeds table page).
+DOG_BREEDS: RangeTable = [
+    (1, 4, "Afghan Hound (SL 6)"),
+    (5, 9, "Beagle (SL 6)"),
+    (10, 13, "Bloodhound (SL 5)"),
+    (14, 15, "Dachshund (SL 3)"),
+    (16, 17, "Elkhound"),
+    (18, 25, "German Shepherd (SL 6)"),
+    (26, 29, "Greyhound (SL 5)"),
+    (30, 35, "Spaniel (SL 4)"),
+    (36, 40, "Cocker Spaniel (SL 4)"),
+    (41, 43, "Terrier (SL 4)"),
+    (44, 46, "Bulldogs (SL 5)"),
+    (47, 51, "Poodle (SL 4)"),
+    (52, 55, "Collie (SL 5)"),
+    (56, 60, "Doberman (SL 6)"),
+    (61, 65, "Great Dane (SL 7)"),
+    (66, 69, "Mastiff (SL 6)"),
+    (70, 74, "Husky (SL 6)"),
+    (75, 80, "St. Bernard (SL 8)"),
+    (81, 83, "Chihuahua (SL 2)"),
+    (84, 86, "Pekingese (SL 2)"),
+    (87, 100, "Mongrel (SL 5)"),
+]
+
+
 def pick_from_table(roll: int, table: RangeTable) -> str:
     for lo, hi, value in table:
         if lo <= roll <= hi:
@@ -337,12 +364,27 @@ def generate_animal_type() -> dict:
     category = pick_from_table(cat_roll, ANIMAL_CATEGORY)
     animal_roll = roll_d100()
     animal = pick_from_table(animal_roll, ANIMALS_BY_CATEGORY[category])
-    return {
+
+    result = {
         "category_roll": cat_roll,
         "category": category,
         "animal_roll": animal_roll,
-        "animal": animal,
+        "animal": animal,  # base animal from the category table
+        "animal_display": animal,  # what we print to Discord
     }
+
+    # If the rolled animal is Dog, roll on the Dog Breeds table and use the breed as the description.
+    if animal == "Dog":
+        breed_roll = roll_d100()
+        breed = pick_from_table(breed_roll, DOG_BREEDS)
+        result["breed_roll"] = breed_roll
+        result["breed"] = breed
+        result["animal_display"] = f"Dog ({breed})"
+        # Per your request: use the breed result as the description text.
+        result["description_override"] = f"Breed: {breed}"
+
+    return result
+
 
 # -------------------- Mutant Background --------------------
 
@@ -538,11 +580,13 @@ def build_sheet_text(
 
     lines.append("")
     lines.append(
-        f"**Animal Type**: {animal['animal']} "
-        f"(Category: {animal['category']}; rolls {animal['category_roll']}/{animal['animal_roll']})"
+        f"**Animal Type**: {animal.get('animal_display', animal['animal'])} "
+        f"(Category: {animal['category']}; rolls {animal['category_roll']}/{animal['animal_roll']}"
+        + (f"; breed roll {animal.get('breed_roll')}" if animal.get('breed_roll') else "")
+        + ")"
     )
 
-    desc = get_animal_description(animal["animal"])
+    desc = animal.get("description_override") or get_animal_description(animal["animal"])
     if desc:
         lines.append(f"**Animal Description:** {desc}")
 
