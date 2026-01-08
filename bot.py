@@ -24,6 +24,8 @@ Features:
 
 import os
 import random
+import json
+from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple, Dict, Optional, Union
@@ -43,6 +45,58 @@ if not DISCORD_TOKEN or len(DISCORD_TOKEN) < 30:
     raise RuntimeError(
         "DISCORD_TOKEN looks missing/invalid. Put your Bot Token in .env as DISCORD_TOKEN=... (no quotes)."
     )
+
+# -------------------- Animal descriptions (offline JSON) --------------------
+
+ANIMAL_DESCRIPTIONS: Dict[str, str] = {}
+
+# Aliases to reconcile generator table names with JSON keys in animal_descriptions.json
+ANIMAL_DESC_ALIASES: Dict[str, str] = {
+    "Crocodile (or Alligator)": "Alligator and Crocodile",
+    "Peccary (treat as a Boar)": "Boar",
+    # If your JSON uses more specific domestic labels, map them here:
+    # "Cat": "Cat — Domestic",
+    # "Dog": "Dog — Domestic",
+}
+
+def load_animal_descriptions() -> None:
+    """Load animal descriptions from animal_descriptions.json located alongside bot.py."""
+    global ANIMAL_DESCRIPTIONS
+    path = Path(__file__).with_name("animal_descriptions.json")
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            # Keep keys as-is but stripped; values single-line stripped
+            ANIMAL_DESCRIPTIONS = {str(k).strip(): str(v).strip() for k, v in data.items()}
+        else:
+            ANIMAL_DESCRIPTIONS = {}
+            print("animal_descriptions.json loaded but was not a dict; ignoring")
+    except FileNotFoundError:
+        ANIMAL_DESCRIPTIONS = {}
+        print(f"animal_descriptions.json not found at {path} (skipping animal descriptions)")
+    except Exception as e:
+        ANIMAL_DESCRIPTIONS = {}
+        print(f"Failed to load animal_descriptions.json ({e}); skipping animal descriptions")
+
+def get_animal_description(animal_name: str) -> Optional[str]:
+    """Return a short description for the rolled animal, if present in ANIMAL_DESCRIPTIONS."""
+    if not animal_name:
+        return None
+    key = animal_name.strip()
+    key = ANIMAL_DESC_ALIASES.get(key, key)
+
+    # Direct match
+    if key in ANIMAL_DESCRIPTIONS:
+        return ANIMAL_DESCRIPTIONS[key]
+
+    # Try a case-insensitive fallback
+    upper_map = {k.upper(): k for k in ANIMAL_DESCRIPTIONS.keys()}
+    k2 = upper_map.get(key.upper())
+    if k2:
+        return ANIMAL_DESCRIPTIONS.get(k2)
+
+    return None
 
 # -------------------- Stat roll mode --------------------
 
@@ -488,6 +542,10 @@ def build_sheet_text(
         f"(Category: {animal['category']}; rolls {animal['category_roll']}/{animal['animal_roll']})"
     )
 
+    desc = get_animal_description(animal["animal"])
+    if desc:
+        lines.append(f"**Animal Description:** {desc}")
+
     lines.append("")
     lines.append(f"**Mutant Background**: {background['background']} (roll {background['roll']})")
     if background.get("summary"):
@@ -571,6 +629,7 @@ class RoadHogBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self) -> None:
+        load_animal_descriptions()
         if GUILD_ID:
             try:
                 guild = discord.Object(id=int(GUILD_ID))
