@@ -1,0 +1,565 @@
+{
+  "87-00 Mongrel": {
+    "description": "Because there are so many different breeds the figures given below are for the average mongrel dog. Players should roll their exact breed.",
+    "bonuses": {}
+  },
+  "Aardvark": {
+    "description": "Aardvarks are a type of anteater totally adapted to feed- ing on ants and termites. They are equipped with claws for digging into ant and termite lairs. Aardvarks eat insects with a long sticky tongue. They are found only in southern Africa.",
+    "bonuses": {
+      "PS": 2,
+      "PP": 1,
+      "PE": 2
+    }
+  },
+  "Alligator": {
+    "description": "Alligators are the largest reptiles in North America. They are dangerous swamp-dwelling carnivores. Their horny scales provide extra protection. Long jaws filled with conical teeth are designed for grasping and tearing apart prey. Crocodiles are basically the same.",
+    "bonuses": {}
+  },
+  "Alligator and Crocodile": {
+    "description": "Alligators are the largest reptiles in North America. They are dangerous swamp-dwelling carnivores. Their horny scales provide extra protection. Long jaws filled with conical teeth are designed for grasping and tearing apart prey. Crocodiles are basically the same.",
+    "bonuses": {}
+  },
+  "Apes": {
+    "description": "The great apes are the closest relatives to man in exis- tence. Various kinds include chimpanzees (closest to man), Gorillas and Orangutans. In all cases they already have partial hands, upright stance and human looks. 29",
+    "bonuses": {
+      "IQ": 6,
+      "ME": 2,
+      "MA": 2,
+      "PS": 4,
+      "PE": 3
+    }
+  },
+  "Armadillo": {
+    "description": "These are naturally armoured mammals. They come in a variety of species that range in size and the quality of armour. The kind described here is the ninebanded armadillo commonly found in the Southern U.S.",
+    "bonuses": {
+      "PS": 2,
+      "PE": 3
+    }
+  },
+  "Baboon": {
+    "description": "These animals are powerful ground dwelling tribal mon- keys. Mandrills and Geladas should have the same characteristics.",
+    "bonuses": {
+      "IQ": 4,
+      "ME": 2,
+      "MA": 3,
+      "PS": 3,
+      "PP": 2
+    }
+  },
+  "Badger": {
+    "description": "Badgers are squat, carnivorous animals who spend most of their time digging into the underground nests of their prey.",
+    "bonuses": {}
+  },
+  "Bat": {
+    "description": "Bats are flying mammals. Their Sonar sense is particu- larly useful because they are primarily nocturnal and spend daylight hours in completely dark caves. Most bats are insect and fruit eaters.",
+    "bonuses": {
+      "IQ": 1,
+      "ME": 1,
+      "MA": 1,
+      "SPD": 2
+    }
+  },
+  "Bear": {
+    "description": "There are several different kinds of bears. Smallest are the black bears, found all over North America. Grizzly bears are next; even bigger are the brown bears of Alaska (sometimes called Kodiak bears). Finally, the largest are the polar bears.",
+    "bonuses": {
+      "PS": 6,
+      "PP": 1,
+      "PE": 4
+    }
+  },
+  "Beaver": {
+    "description": "Dam-building rodents with wide, flat tails. They are natural engineers and are very family oriented.",
+    "bonuses": {
+      "IQ": 5,
+      "ME": 1,
+      "PS": 3,
+      "PE": 1
+    }
+  },
+  "Boar": {
+    "description": "Dangerous wild pigs which were imported to the U.S. as a game animal. Boars are quick and dangerous with large, sharp tusks protruding from sides of the mouth.",
+    "bonuses": {
+      "PS": 2,
+      "PP": 1,
+      "PE": 1,
+      "SPD": 1
+    }
+  },
+  "Buffalo": {
+    "description": "These huge grazing animals were virtually exterminated by hunters in the west.",
+    "bonuses": {}
+  },
+  "Camel": {
+    "description": "These large desert grazing animals have been used in the Middle East as beasts of burden for centuries. In spite of their long contact with man they remain vicious and short tempered. Camels (and camel characters) can go for several days without food or water. They can lose up to 25% of their body weight and gain it all back ten minutes after drinking water (sometimes up to 25 gallons.)",
+    "bonuses": {
+      "PS": 1,
+      "PE": 4
+    }
+  },
+  "Canine: Fox": {
+    "description": "There are two major kinds of foxes in North America, the red (a furred fox) and the grey (a haired fox). Both are small, clever carnivores. There is also a white Arctic Fox with the same characteristics.",
+    "bonuses": {}
+  },
+  "Canines, Wild": {
+    "description": "Coyotes and Wolves are carnivores who hunt in highly organized packs. They are intelligent and very social.",
+    "bonuses": {}
+  },
+  "Cat — Domestic": {
+    "description": "There are a wide variety of cat breeds, but all have roughly the same characteristics. Cat characters can have spotted, striped, persian or calico body markings.",
+    "bonuses": {}
+  },
+  "Cat — Wild": {
+    "description": "This includes the Bobcat and Lynx, both tree-climbing feline hunters. The wild felines are solitary creatures who avoid areas inhabited by man. Ocelots and Servals are similar.",
+    "bonuses": {}
+  },
+  "Cheetah": {
+    "description": "A large, spotted feline that looks somewhat doglike. Cheetahs are the fastest mammals in the world and use their speed for hunting.",
+    "bonuses": {
+      "PP": 1,
+      "SPD": 10
+    }
+  },
+  "Chicken": {
+    "description": "Domestic animal bred for food and egg-laying. Chickens are some of the only known creatures who can see into the ultra-vio- let.",
+    "bonuses": {}
+  },
+  "Cow & Bull": {
+    "description": "Domesticated cattle bred for meat or milk production. There are dozens of specialized breeds, each with different sizes and characteristics.",
+    "bonuses": {
+      "PS": 2,
+      "SPD": 2
+    }
+  },
+  "Crocodile": {
+    "description": "Alligators are the largest reptiles in North America. They are dangerous swamp-dwelling carnivores. Their horny scales provide extra protection. Long jaws filled with conical teeth are designed for grasping and tearing apart prey. Crocodiles are basically the same.",
+    "bonuses": {
+      "PS": 3,
+      "PE": 1,
+      "SPD": 1
+    }
+  },
+  "Crow": {
+    "description": "These clever scavengers live off human crops. They are very intelligent and social. In North America, there are two common species, the Common Raven and the Fish Crow.",
+    "bonuses": {
+      "IQ": 3,
+      "ME": 2
+    }
+  },
+  "Deer": {
+    "description": "Woodland grazing animal whose primary defense against predators is speed. There are a large variety of deer, all with roughly the same characteristics.",
+    "bonuses": {
+      "PS": 1,
+      "PE": 1,
+      "SPD": 3
+    }
+  },
+  "Duck": {
+    "description": "There are dozens of separate species of Aquatic birds including ducks, geese, swans and many others. Most are migratory and spend most of their time either flying or on the water. Ducks can Hold Breath.",
+    "bonuses": {}
+  },
+  "Elephant": {
+    "description": "This is the world's largest land animal. The elephant is used as a circus performer throughout the world. It is a useful worker with tremendous strength and a trunk that serves as a flexible (partial) human hand.",
+    "bonuses": {
+      "PS": 2,
+      "SPD": 3
+    }
+  },
+  "Elk": {
+    "description": "These large, northern grazing animals are the second largest kind of deer. They are very social animals with the herds moving to the mountains in summer and the valleys in winter.",
+    "bonuses": {
+      "PP": 1,
+      "PS": 2
+    }
+  },
+  "Felines": {
+    "description": "The great felines are basically similar. Tigers are the largest and are solitary hunters. The second largest felines are Lions who are special hunters. American Jaguars and African Leopards are roughly the same size and have the same characteristics.",
+    "bonuses": {
+      "PS": 2,
+      "PP": 6,
+      "PE": 2
+    }
+  },
+  "Frog": {
+    "description": "There are hundreds of different kinds of frogs in North America alone. Some are purely aquatic but others have adapted to living on the ground or in trees. Most are insects eaters who rely on their sticky tongue.",
+    "bonuses": {
+      "PP": 1,
+      "SPD": 2
+    }
+  },
+  "Goat": {
+    "description": "A domesticated animal used for milk or meat the world over. Goats are valued because of their ability to survive in harsh climates and on relatively little food.",
+    "bonuses": {
+      "IQ": 2,
+      "PE": 4,
+      "SPD": 1
+    }
+  },
+  "Hippopotamus": {
+    "description": "These giant grazing animals spend most of their lives in the water.",
+    "bonuses": {}
+  },
+  "Horse": {
+    "description": "There are quite a few different breeds of this domesti- cated grazing animal. Figures given below are for typical riding horses.",
+    "bonuses": {
+      "PS": 2,
+      "SPD": 6
+    }
+  },
+  "Marten & Mink": {
+    "description": "Beautiful, foxfaced animals with gorgeous fur. Great climbers, incurably curious . . . (Fishers and Minks have similar characteristics).",
+    "bonuses": {
+      "IQ": 2,
+      "ME": 1,
+      "PP": 2,
+      "SPD": 5
+    }
+  },
+  "Mole": {
+    "description": "This animal is completely adapted to a burrowing exis- tence. Moles can Hold Breath.",
+    "bonuses": {}
+  },
+  "Monkey": {
+    "description": "There are at least a dozen different kinds of monkeys kept as pets or research animals in the U.S. Although the markings and fur may differ, the animal characteristics are the same. All the monkeys are tree dwellers with prehensile tails.",
+    "bonuses": {
+      "IQ": 3,
+      "ME": 1,
+      "MA": 1,
+      "PP": 2,
+      "PE": 1,
+      "SPD": 2
+    }
+  },
+  "Moose": {
+    "description": "These huge animals graze in the swamps and marshes of the northern U.S. and Canada. Moose during rutting season or guarding young are very dangerous.",
+    "bonuses": {
+      "PS": 4
+    }
+  },
+  "Mountain Lion": {
+    "description": "Found throughout North America, Mountain Lions have been called Cougars, Panthers, Pumas and other names. While smal- ler than lions and tigers, they are very agile and bring down deer and other prey much larger than themselves. A typical Mountain Lion will kill a deer every week.",
+    "bonuses": {
+      "PP": 3,
+      "SPD": 2
+    }
+  },
+  "Muskrat": {
+    "description": "Muskrats are common throughout North America and Europe. They are river dwelling vegetarians and scavengers. Al- though not as talented as Beavers they do build dens with underwater entrances.",
+    "bonuses": {
+      "IQ": 3,
+      "ME": 1,
+      "MA": 1
+    }
+  },
+  "Opossum": {
+    "description": "'Possums look like large, scrawny rats with naked ears, silver-tipped fur and long scaly tails.",
+    "bonuses": {}
+  },
+  "Otter": {
+    "description": "There are two major variety of these playful creatures. River Otters are found throughout North America. Sea Otters are much larger and live on the pacific coast.",
+    "bonuses": {
+      "IQ": 3,
+      "ME": 2,
+      "MA": 3,
+      "PP": 4,
+      "SPD": 3
+    }
+  },
+  "Owl": {
+    "description": "Owls are predatory birds that operate primarily at night. There are quite a few varieties, ranging in size and abilities.",
+    "bonuses": {
+      "PP": 4,
+      "SPD": 1
+    }
+  },
+  "Parrot": {
+    "description": "There are over 300 species of parrot, each with a more colorful plumage than the next. Some parrots raised in captivity can be taught to imitate human voices.",
+    "bonuses": {}
+  },
+  "Pet Birds": {
+    "description": "There are several varieties of tropical songbirds kept as pets. Parakeets and budgies are the most popular.",
+    "bonuses": {}
+  },
+  "Pig": {
+    "description": "Domesticated pigs can be fattened up to huge propor- tions. As a meat animal they are very efficient, producing a large amount of food relative to their consumption.",
+    "bonuses": {
+      "IQ": 3,
+      "ME": 1,
+      "MA": 1
+    }
+  },
+  "Pigeon": {
+    "description": "Pigeons have adapted completely to city life. They are scavengers with a life style that makes them a serious health hazard.",
+    "bonuses": {}
+  },
+  "Porcupine": {
+    "description": "Porcupines have evolved a natural defense of bristling sharp quills. This makes them invulnerable to most predators and easy prey to Fishers who include them as a regular part of their diet.",
+    "bonuses": {}
+  },
+  "Rabbit": {
+    "description": "Different kinds of rabbits are found around the world. They are small vegetarians who depend on speed for defense against predators.",
+    "bonuses": {
+      "PP": 1,
+      "SPD": 4
+    }
+  },
+  "Raccoon": {
+    "description": "These creatures are very adaptable. They are predomi- nately active at night.",
+    "bonuses": {
+      "IQ": 4,
+      "ME": 2,
+      "MA": 2,
+      "PP": 1
+    }
+  },
+  "Rhinoceros": {
+    "description": "Aggressive grazing animals inhabiting grasslands. They are good runners and can get up to 35mph. They are also strong enough to overturn a truck. African Black and White Rhinos have two horns while the Asian Great Indian Rhino has just one. 43",
+    "bonuses": {
+      "PS": 4,
+      "SPD": 4
+    }
+  },
+  "Rodent": {
+    "description": "Includes Mice, Rats, Guinea Pigs, Hamsters and a wide variety of other small animals. All these animals are good scavengers and spend a lot of time underground.",
+    "bonuses": {
+      "IQ": 2,
+      "ME": 1,
+      "PP": 1
+    }
+  },
+  "Sheep": {
+    "description": "This domesticated animal has been bred for meat and wool. Sheep are grazing animals found throughout the world.",
+    "bonuses": {}
+  },
+  "Skunk": {
+    "description": "Most North American Skunks are of the striped or spot- ted variety. These animals use their skunk glands as a defense against predators. 44",
+    "bonuses": {}
+  },
+  "Sparrow": {
+    "description": "The common House Sparrow is actually related to finches. This bird was imported from Europe and has become a commonplace in urban and suburban area.",
+    "bonuses": {
+      "SPD": 5
+    }
+  },
+  "Squirrel": {
+    "description": "This is the most common wild mammal in urban areas. They live in the trees and have tremendous tree climbing abilities. Chipmunks and ground squirrels are similar but lack climbing claws. Flying Squirrels are the only kind that can glide.",
+    "bonuses": {
+      "PP": 1,
+      "SPD": 4
+    }
+  },
+  "Turkey": {
+    "description": "The domestic turkey is a flightless, running bird that has been domesticated as a food animal. Wild turkeys are much leaner and faster.",
+    "bonuses": {}
+  },
+  "Turtle": {
+    "description": "Turtles live in a wide variety of environments. Some turtles are purely aquatic, others have adapted to deserts. The Teen- age Mutant Ninja Turtles were common, small pond turtles.",
+    "bonuses": {}
+  },
+  "Weasel": {
+    "description": "Both short-tailed and long-tailed weasels are fearless car- nivores. Their lifestyle is based on constant killing of whatever prey is available, even animals much larger than themselves. They are long bodied animals so narrow that they can fit into very small holes. Weasel characters will be able to squeeze through small open- ings. Weasel characters will have five-fingered hands.",
+    "bonuses": {
+      "PP": 9,
+      "SPD": 7
+    }
+  },
+  "Wild Birds": {
+    "description": "Wild birds are the common seed and insect eaters in North American forests. Included are Blue Jays, Cardinals, Robins and a host of other small birds.",
+    "bonuses": {}
+  },
+  "Wild Fowl": {
+    "description": "These are birds that spend most of their time on the ground hunting seeds and insects. These are also known as game birds because of their popularity with hunters. They tend to be heavier and poorer flyers than other wild birds, included are Grouse, Partridge, Pheasant, and Quail.",
+    "bonuses": {}
+  },
+  "Wild Predatory Birds": {
+    "description": "All these predatory birds share curved beaks (for ripping prey), sharp talons, keen eyesight and the ability to dive directly onto their prey. Included are eagles, falcons and hawks.",
+    "bonuses": {
+      "PP": 3,
+      "SPD": 2
+    }
+  },
+  "Wolverine": {
+    "description": "These northern carnivores have incredible endurance and can travel 20 or more miles a day through heavy snow in pursuit of prey. They are tough enough to kill animals many times their own size and will even drive away full grown bears. The fur does not collect ice and they are greatly resistant to cold. Wolverine characters can Jump or Leap an extra 5 feet.",
+    "bonuses": {
+      "IQ": 3,
+      "PS": 2,
+      "PP": 5,
+      "PE": 10
+    }
+  },
+  "Buzzard": {
+    "description": "There's a common misconception (the result of a certain Hollywood cartoon character) that Buzzards are similar to vultures. Wrong! Buzzards are actually predatory birds (vultures are scaven gers) who look pretty much like hawks.",
+    "bonuses": {
+      "PP": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Condor": {
+    "description": "The largest flying animal in the Americas is a carrion eater like its vulture relatives . The huge Condor never attacks a living creature. Thick feathers, especially in a ruff around the neck, to protect it from the cold of its high altitude homeland .",
+    "bonuses": {
+      "PS": 4,
+      "PE": 1
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Hummingbird": {
+    "description": "These tiny birds feed mainly on flower nectar and pollen . Their incredible flying speed makes them invulnerable to most pre dators. Their feathers are multicolored and seem to change constantly in the light. Black-Chinned and Calliope Hummingbirds are common on the West Coast.",
+    "bonuses": {
+      "PP": 3,
+      "SPD": 10
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Roadrunner": {
+    "description": "As the name and cartoon character suggests, these birds are great runners. They eat mostly insects and fruit, but will also attack fairly large reptiles.",
+    "bonuses": {
+      "PP": 2,
+      "SPD": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Vulture": {
+    "description": "Carrion eaters who feed exclusively on dead bodies and the remains left by other predators. Both Turkey Vultures and King Vultures are found in the western U.S. They will fly in circles over a dying creature while waiting for their next meal .",
+    "bonuses": {
+      "ME": 2,
+      "PE": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Coati": {
+    "description": "If anything looks like a cross between a raccoon and an oppossum it's the Coati. Their furry tails are as long as the rest of their bodies and are always kept fully upright, as if they were carrying flagpoles around.",
+    "bonuses": {
+      "IQ": 2,
+      "MA": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Dolphin": {
+    "description": "Dolphins come in quite a variety, ranging from creatures almost whale-sized down to much smaller species. The description here is for the common Bottlenosed Dolphin (like 'Flipper'). Note that the vast majority of mutated dolphins are aquatic . Dolphin player characters will be lonely outcasts who must Hve on land because of their mutation .",
+    "bonuses": {
+      "IQ": 5,
+      "ME": 5,
+      "MA": 4
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Donkey": {
+    "description": "Also called an \"Ass\" or \"Burro\", they are distant rela tives of horses. Although Horses and Donkeys can interbreed the result is a sterile Mule.",
+    "bonuses": {},
+    "source": "Road Hogs supplement"
+  },
+  "Pronghorn": {
+    "description": "These grazing animals of the western plains are reputed to be the fastest animals in the Americas . Not only are they fast, but agile as well; able to take comers and come to sudden stops with surprising skill .",
+    "bonuses": {
+      "PE": 3,
+      "SPD": 7
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Ringtail": {
+    "description": "Related to raccoons and has the characteristic ring striped , bushy tail. They are nocturnal predators who live on mice, insects and berries . Other names include \"cacomistie,\" \"ring-tailed cat,\" or \"civet cat.\"",
+    "bonuses": {
+      "ME": 1,
+      "MA": 1,
+      "PP": 2
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Kangaroo Rat/Jumping Mouse": {
+    "description": "These small rodents are like kangaroos in appearance , with oversized back legs, and designed for hopping rather than running . Although the Kangaroo Rat (to 4 ounces) is much larger than the Jumping Mouse (less than 1 ounce) they are identical for the purposes of the game.",
+    "bonuses": {
+      "SPD": 5
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Pack Rat": {
+    "description": "Known as the White-Throated Wood rat, this creature is a natural thief. It will often sneak into populated areas to steal any bright shiny object that catches its fancy. They are also natural builders and will construct fortresses up to 5 feet tall to keep out predators.",
+    "bonuses": {
+      "ME": 2,
+      "PP": 4
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Prairie Dog": {
+    "description": "Prairie dogs are communal animals, building under ground cities with up to 1,000 inhabitants. They communicate using a complex code of chattering, barking, signs and odors. White-tailed Prairie Dogs are identical except that they live at higher altitudes .",
+    "bonuses": {
+      "IQ": 2,
+      "ME": 6,
+      "MA": 4
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Sea Turtle": {
+    "description": "The two main varieties are the Leatherback and the Green Turtle. Both are deep water animals who range all over the world. Their Il9llbris more leathery, and thicker than a land turtle's.",
+    "bonuses": {
+      "PE": 4
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Sea Lion Family": {
+    "description": "This family of aquatic mammals includes Sea Lions and several Fur Seals. They are distinguished from other seals in that their hind flippers can be used as legs on land, and in the water, they use their front flippers for propulsion. There is a huge difference between male and female sizes; the data below represents a rough average. 12 ,/",
+    "bonuses": {
+      "ME": 1,
+      "MA": 3,
+      "PP": 1
+    },
+    "source": "Road Hogs supplement"
+  },
+  "True Seals": {
+    "description": "True seals have no external ears and cannot use their rear flippers on land. In the water they use the back flippers and pull themselves around on land with the front flippers .",
+    "bonuses": {
+      "ME": 2,
+      "MA": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Walrus": {
+    "description": "Like Sea Lions, Walruses can use their back flippers for walking on land and, like True Seals, they have no exterior ears. Their heavy whiskers are used to feel for food in the dark. Tusks are used both for fighting and for dredging the bottom of the ocean for food.",
+    "bonuses": {},
+    "source": "Road Hogs supplement"
+  },
+  "Whales": {
+    "description": "These huge ocean mammals are only very rarely mutated into a land form .",
+    "bonuses": {
+      "ME": 4,
+      "MA": 4
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Chameleon": {
+    "description": "The eight legged octopus is possibly the most intelligent non-manunalian animal. There are many species, some much larger than described here.",
+    "bonuses": {
+      "PS": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Gila Monster": {
+    "description": "Gila Monsters are carnivorous desert dwellers. They are the only venomous lizards. A related species, the Mexican Beaded Lizard is similar.",
+    "bonuses": {},
+    "source": "Road Hogs supplement"
+  },
+  "Octopus": {
+    "description": "The eight legged octopus is possibly the most intelligent non-manunalian animal. There are many species, some much larger than described here.",
+    "bonuses": {
+      "PS": 3
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Kangaroo Rat": {
+    "description": "These small rodents are like kangaroos in appearance , with oversized back legs, and designed for hopping rather than running . Although the Kangaroo Rat (to 4 ounces) is much larger than the Jumping Mouse (less than 1 ounce) they are identical for the purposes of the game.",
+    "bonuses": {
+      "SPD": 5
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Jumping Mouse": {
+    "description": "These small rodents are like kangaroos in appearance , with oversized back legs, and designed for hopping rather than running . Although the Kangaroo Rat (to 4 ounces) is much larger than the Jumping Mouse (less than 1 ounce) they are identical for the purposes of the game.",
+    "bonuses": {
+      "SPD": 5
+    },
+    "source": "Road Hogs supplement"
+  },
+  "Cat - Domestic": {
+    "description": "There are a wide variety of cat breeds, but all have roughly the same characteristics. Cat characters can have spotted, striped, persian or calico body markings.",
+    "bonuses": {}
+  }
+}

@@ -48,43 +48,107 @@ if not DISCORD_TOKEN or len(DISCORD_TOKEN) < 30:
 
 # -------------------- Animal descriptions (offline JSON) --------------------
 
-ANIMAL_DESCRIPTIONS: Dict[str, str] = {}
+ANIMAL_DATA: Dict[str, Dict[str, object]] = {}
 
 # Aliases to reconcile generator table names with JSON keys in animal_descriptions.json
 ANIMAL_DESC_ALIASES: Dict[str, str] = {
     "Crocodile (or Alligator)": "Alligator and Crocodile",
     "Peccary (treat as a Boar)": "Boar",
     # If your JSON uses more specific domestic labels, map them here:
-    "Cat": "Cat — Domestic",
+    "Cat": "Cat - Domestic",
+    "Cat — Domestic": "Cat - Domestic",
+    "Cat – Domestic": "Cat - Domestic",
+    "Cat - Domestic": "Cat - Domestic",
     # "Dog": "Dog — Domestic",
 }
 
-def load_animal_descriptions() -> None:
-    """Load animal descriptions from animal_descriptions.json located alongside bot.py."""
-    global ANIMAL_DESCRIPTIONS
-    path = Path(__file__).with_name("animal_descriptions.json")
-    try:
-        with path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, dict):
-            # Keep keys as-is but stripped; values single-line stripped
-            ANIMAL_DESCRIPTIONS = {str(k).strip(): str(v).strip() for k, v in data.items()}
-        else:
-            ANIMAL_DESCRIPTIONS = {}
-            print("animal_descriptions.json loaded but was not a dict; ignoring")
-    except FileNotFoundError:
-        ANIMAL_DESCRIPTIONS = {}
-        print(f"animal_descriptions.json not found at {path} (skipping animal descriptions)")
-    except Exception as e:
-        ANIMAL_DESCRIPTIONS = {}
-        print(f"Failed to load animal_descriptions.json ({e}); skipping animal descriptions")
+def load_animal_data() -> None:
+    """Load animal data (descriptions + optional attribute bonuses).
 
-def get_animal_description(animal_name: str) -> Optional[str]:
-    """Return a short description for the rolled animal, if present in ANIMAL_DESCRIPTIONS."""
+    Preferred file: animal_data.json (new schema: {name: {description: str, bonuses: {STAT:int}}})
+    Backward compatible: animal_descriptions.json (old schema: {name: str})
+    """
+    global ANIMAL_DATA
+    here = Path(__file__).resolve().parent
+
+    def _coerce_bonuses(b: object) -> Dict[str, int]:
+        out: Dict[str, int] = {}
+        if isinstance(b, dict):
+            for k, v in b.items():
+                try:
+                    out[str(k).strip().upper().replace('.', '')] = int(v)
+                except Exception:
+                    continue
+        return out
+
+    # Try new file first
+    path_new = here / "animal_data.json"
+    path_old = here / "animal_descriptions.json"
+
+    data: object = None
+    for path in (path_new, path_old):
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                print(f"{path.name} loaded but was not a dict; ignoring")
+                data = None
+                continue
+
+            # Normalize into ANIMAL_DATA
+            out: Dict[str, Dict[str, object]] = {}
+            for k, v in data.items():
+                key = str(k).strip()
+                if not key:
+                    continue
+                if isinstance(v, str):
+                    out[key] = {"description": v.strip(), "bonuses": {}}
+                elif isinstance(v, dict):
+                    desc = str(v.get("description", "")).strip()
+                    bon = _coerce_bonuses(v.get("bonuses", {}))
+                    out[key] = {"description": desc, "bonuses": bon}
+                else:
+                    continue
+
+            ANIMAL_DATA = out
+            print(f"Loaded {len(ANIMAL_DATA)} animal entries from {path.name}")
+            return
+
+        except FileNotFoundError:
+            continue
+        except Exception as e:
+            print(f"Failed loading {path}: {e}")
+            continue
+
+    ANIMAL_DATA = {}
+    print("No animal_data.json or animal_descriptions.json found; animal descriptions/bonuses disabled")
+
+
+def get_animal_info(animal_name: str) -> Tuple[Optional[str], Dict[str, int]]:
+    """Return (description, attribute_bonuses) for the rolled animal, if present."""
     if not animal_name:
-        return None
+        return None, {}
     key = animal_name.strip()
     key = ANIMAL_DESC_ALIASES.get(key, key)
+
+    def _lookup(k: str) -> Optional[Dict[str, object]]:
+        if k in ANIMAL_DATA:
+            return ANIMAL_DATA[k]
+        # case-insensitive
+        upper_map = {x.upper(): x for x in ANIMAL_DATA.keys()}
+        kk = upper_map.get(k.upper())
+        if kk:
+            return ANIMAL_DATA.get(kk)
+        return None
+
+    entry = _lookup(key)
+    if not entry:
+        return None, {}
+
+    desc = entry.get("description") if isinstance(entry, dict) else None
+    bonuses = entry.get("bonuses") if isinstance(entry, dict) else None
+    return (str(desc).strip() if desc else None, bonuses if isinstance(bonuses, dict) else {})
+
 
     # Direct match
     if key in ANIMAL_DESCRIPTIONS:
@@ -579,18 +643,49 @@ def generate_finances(background_name: str) -> dict:
 
 # -------------------- Character generation / formatting --------------------
 
+def apply_stat_bonuses(scores: Dict[str, int], bonuses: Dict[str, int]) -> None:
+    """In-place add bonuses to scores. Unknown keys are created (e.g., SDC)."""
+    for k, v in (bonuses or {}).items():
+        kk = str(k).strip().upper().replace('.', '')
+        try:
+            vv = int(v)
+        except Exception:
+            continue
+        scores[kk] = scores.get(kk, 0) + vv
+
+
 def generate_character(
     stat_mode: StatRollMode = StatRollMode.THREE_D6
 ) -> tuple[Dict[str, int], dict, dict, dict]:
     attrs = ["IQ", "ME", "MA", "PS", "PP", "PE", "PB", "SPD"]
     scores = {a: roll_attribute(stat_mode) for a in attrs}
+
     animal = generate_animal_type()
     background = generate_mutant_background()
-
-    # Apply any stat/SDC bonuses granted by the background text.
-    scores = apply_background_stat_bonuses(scores, background["background"])
-
     finances = generate_finances(background["background"])
+
+    # Apply Mutant Background bonuses first (explicitly granted by the background text)
+    bg_bon = BACKGROUND_STAT_BONUSES.get(background["background"], {})
+    if bg_bon:
+        apply_stat_bonuses(scores, bg_bon)
+        background["stat_bonuses"] = dict(bg_bon)
+
+    # Apply Animal attribute bonuses (from animal_data.json / animal_descriptions.json)
+    desc, a_bon = get_animal_info(animal["animal"])
+    if desc:
+        animal["description"] = desc
+    if a_bon:
+        # normalize keys (IQ/ME/MA/PS/PP/PE/PB/SPD/SDC)
+        norm_bon: Dict[str, int] = {}
+        for k, v in a_bon.items():
+            kk = str(k).strip().upper().replace('.', '')
+            try:
+                norm_bon[kk] = int(v)
+            except Exception:
+                continue
+        apply_stat_bonuses(scores, norm_bon)
+        animal["attribute_bonuses"] = dict(norm_bon)
+
     return scores, animal, background, finances
 
 def build_sheet_text(
@@ -618,12 +713,42 @@ def build_sheet_text(
         + ")"
     )
 
-    desc = animal.get("description_override") or get_animal_description(animal["animal"])
+    desc = animal.get("description_override") or animal.get("description")
+    _ab = {}
+    if not desc:
+        desc, _ab = get_animal_info(animal["animal"])
     if desc:
         lines.append(f"**Animal Description:** {desc}")
 
+    # Animal attribute bonuses (already applied to stats)
+    ab = animal.get("attribute_bonuses") or {}
+    if isinstance(ab, dict) and ab:
+        parts = []
+        for k, v in ab.items():
+            try:
+                vv = int(v)
+            except Exception:
+                continue
+            sign = "+" if vv >= 0 else ""
+            parts.append(f"{k} {sign}{vv}")
+        if parts:
+            lines.append(f"**Animal Stat Bonuses Applied:** {', '.join(parts)}")
+
     lines.append("")
-    lines.append(f"**Mutant Background**: {background['background']} (roll {background['roll']})")
+    bg_line = f"**Mutant Background**: {background['background']} (roll {background['roll']})"
+    sb = background.get("stat_bonuses") or {}
+    if isinstance(sb, dict) and sb:
+        parts=[]
+        for k,v in sb.items():
+            try:
+                vv=int(v)
+            except Exception:
+                continue
+            sign="+" if vv>=0 else ""
+            parts.append(f"{k} {sign}{vv}")
+        if parts:
+            bg_line += " (" + ", ".join(parts) + " — already applied)"
+    lines.append(bg_line)
     if background.get("summary"):
         lines.append(f"*{background['summary']}*")
 
@@ -721,7 +846,7 @@ class RoadHogBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self) -> None:
-        load_animal_descriptions()
+        load_animal_data()
         if GUILD_ID:
             try:
                 guild = discord.Object(id=int(GUILD_ID))
