@@ -452,6 +452,33 @@ BACKGROUND_SKILLS_SUMMARY: Dict[str, str] = {
     ),
 }
 
+
+# Stat/derived-stat bonuses explicitly granted by the Mutant Background text.
+# These are applied to the rolled results after rolling attributes.
+# NOTE: SDC is not an attribute in the 8-stat block, but is included as a derived stat here.
+BACKGROUND_STAT_BONUSES: Dict[str, Dict[str, int]] = {
+    "Feral Mutant Animal": {"SDC": 15, "PE": 6, "PS": 3, "PP": 2},
+    "Natural Mechanical Genius": {"ME": 5},
+}
+
+def apply_background_stat_bonuses(scores: Dict[str, int], background_name: str) -> Dict[str, int]:
+    bonuses = BACKGROUND_STAT_BONUSES.get(background_name, {})
+    if not bonuses:
+        return scores
+
+    # Copy so we don't mutate callers unexpectedly.
+    updated = dict(scores)
+
+    # Ensure SDC exists if we're going to modify it.
+    if "SDC" in bonuses and "SDC" not in updated:
+        updated["SDC"] = 0
+
+    for k, v in bonuses.items():
+        updated[k] = updated.get(k, 0) + v
+
+    return updated
+
+
 def generate_mutant_background() -> dict:
     roll = roll_d100()
     background = pick_from_table(roll, MUTANT_BACKGROUND)
@@ -460,6 +487,7 @@ def generate_mutant_background() -> dict:
         "background": background,
         "summary": MUTANT_BACKGROUND_SUMMARY.get(background, ""),
         "skills_summary": BACKGROUND_SKILLS_SUMMARY.get(background, ""),
+        "stat_bonuses": BACKGROUND_STAT_BONUSES.get(background, {}),
     }
 
 # -------------------- Finances (vehicle expenses + personal money) --------------------
@@ -558,6 +586,10 @@ def generate_character(
     scores = {a: roll_attribute(stat_mode) for a in attrs}
     animal = generate_animal_type()
     background = generate_mutant_background()
+
+    # Apply any stat/SDC bonuses granted by the background text.
+    scores = apply_background_stat_bonuses(scores, background["background"])
+
     finances = generate_finances(background["background"])
     return scores, animal, background, finances
 
@@ -600,6 +632,22 @@ def build_sheet_text(
         lines.append("")
         lines.append("**Background Skills (summary)**")
         lines.append(skills_summary)
+
+    stat_bonuses = background.get("stat_bonuses", {})
+    if stat_bonuses:
+        # Present bonuses in a compact, readable way.
+        parts = []
+        for k, v in stat_bonuses.items():
+            sign = "+" if v >= 0 else ""
+            parts.append(f"{k} {sign}{v}")
+        lines.append("")
+        lines.append("**Background Stat Bonuses Applied**")
+        lines.append(", ".join(parts))
+
+    if "SDC" in scores:
+        lines.append("")
+        lines.append("**Derived Stats**")
+        lines.append(f"SDC: {scores['SDC']}")
 
     lines.append("")
     lines.append("**Finances**")
