@@ -106,11 +106,17 @@
   },
   "Cat — Domestic": {
     "description": "There are a wide variety of cat breeds, but all have roughly the same characteristics. Cat characters can have spotted, striped, persian or calico body markings.",
-    "bonuses": {}
+    "bonuses": {
+      "ME": 2,
+      "PP": 3
+    }
   },
   "Cat — Wild": {
     "description": "This includes the Bobcat and Lynx, both tree-climbing feline hunters. The wild felines are solitary creatures who avoid areas inhabited by man. Ocelots and Servals are similar.",
-    "bonuses": {}
+    "bonuses": {
+      "ME": 2,
+      "PP": 3
+    }
   },
   "Cheetah": {
     "description": "A large, spotted feline that looks somewhat doglike. Cheetahs are the fastest mammals in the world and use their speed for hunting.",
