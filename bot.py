@@ -853,7 +853,6 @@ class RoadHogBot(discord.Client):
                 self.tree.copy_global_to(guild=guild)
                 await self.tree.sync(guild=guild)
                 print(f"Synced commands to guild {GUILD_ID}")
-                return
             except discord.Forbidden:
                 print("Guild sync forbidden (Missing Access). Falling back to global sync...")
             except discord.HTTPException as e:
